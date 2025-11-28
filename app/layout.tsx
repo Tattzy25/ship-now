@@ -15,7 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "AI SDK Image Generator",
+  title: "TaTTTy",
   description: "An open-source AI image generator using the AI SDK by Vercel",
 };
 

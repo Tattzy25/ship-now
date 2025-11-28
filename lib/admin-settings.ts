@@ -17,6 +17,8 @@ export type AdminSettings = {
     vertexAddWatermark: boolean;
     timeoutMillis: number;
   };
+  assetRoot?: string;
+  outputFolder?: string;
 };
 
 let settings: AdminSettings = {
@@ -36,6 +38,8 @@ let settings: AdminSettings = {
     vertexAddWatermark: false,
     timeoutMillis: 55 * 1000,
   },
+  assetRoot: "",
+  outputFolder: "",
 };
 
 export const getAdminSettings = (): AdminSettings => settings;
@@ -78,6 +82,12 @@ export const updateAdminSettings = (patch: Partial<AdminSettings>): AdminSetting
       next.generation.size = next.generation.size;
     }
   }
+  if (typeof patch.assetRoot === "string") {
+    next.assetRoot = patch.assetRoot;
+  }
+  if (typeof patch.outputFolder === "string") {
+    next.outputFolder = patch.outputFolder;
+  }
   settings = next;
   return settings;
 };
@@ -100,6 +110,8 @@ export const resetAdminSettings = (): AdminSettings => {
       vertexAddWatermark: false,
       timeoutMillis: 55 * 1000,
     },
+    assetRoot: "",
+    outputFolder: "",
   };
   return settings;
 };

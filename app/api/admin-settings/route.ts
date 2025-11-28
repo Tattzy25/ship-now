@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
         vertexAddWatermark: boolean;
         timeoutMillis: number;
       };
+      assetRoot?: string;
+      outputFolder?: string;
     }> = body;
     const updated = updateAdminSettings(patch);
     return NextResponse.json(updated);
