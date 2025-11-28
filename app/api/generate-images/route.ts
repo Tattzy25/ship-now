@@ -5,6 +5,7 @@ import { fireworks } from "@ai-sdk/fireworks";
 import { replicate } from "@ai-sdk/replicate";
 import { vertex } from "@ai-sdk/google-vertex/edge";
 import { ProviderKey } from "@/lib/provider-config";
+import { getAdminSettings } from "@/lib/admin-settings";
 import { GenerateImageRequest } from "@/lib/api-types";
 
 /**
@@ -58,34 +59,48 @@ export async function POST(req: NextRequest) {
     (await req.json()) as GenerateImageRequest;
 
   try {
-    if (!prompt || !provider || !modelId || !providerConfig[provider]) {
+    const settings = getAdminSettings();
+    if (!prompt || !provider || !providerConfig[provider]) {
       const error = "Invalid request parameters";
       console.error(`${error} [requestId=${requestId}]`);
       return NextResponse.json({ error }, { status: 400 });
     }
+    if (!settings.providerEnabled[provider]) {
+      return NextResponse.json({ error: "provider disabled" }, { status: 403 });
+    }
 
     const config = providerConfig[provider];
+    const chosenModelId = settings.hideModelFromUser
+      ? settings.providerModelOverrides[provider]
+      : modelId;
+    const finalPrompt = settings.systemPrompt
+      ? `${settings.systemPrompt}\n${prompt}`
+      : prompt;
+    const useSize = settings.generation.dimensionFormat === "size";
+    const seedValue = settings.generation.useSeed
+      ? settings.generation.randomizeSeed
+        ? Math.floor(Math.random() * 1000000)
+        : settings.generation.seed
+      : undefined;
+    const timeoutMillis = settings.generation.timeoutMillis ?? TIMEOUT_MILLIS;
     const startstamp = performance.now();
     const generatePromise = generateImage({
-      model: config.createImageModel(modelId),
-      prompt,
-      ...(config.dimensionFormat === "size"
-        ? { size: DEFAULT_IMAGE_SIZE }
-        : { aspectRatio: DEFAULT_ASPECT_RATIO }),
-      ...(provider !== "openai" && {
-        seed: Math.floor(Math.random() * 1000000),
-      }),
-      // Vertex AI only accepts a specified seed if watermark is disabled.
-      providerOptions: { vertex: { addWatermark: false } },
+      model: config.createImageModel(chosenModelId),
+      prompt: finalPrompt,
+      ...(useSize
+        ? { size: settings.generation.size ?? DEFAULT_IMAGE_SIZE }
+        : { aspectRatio: settings.generation.aspectRatio ?? DEFAULT_ASPECT_RATIO }),
+      ...(provider !== "openai" && seedValue !== undefined && { seed: seedValue }),
+      providerOptions: { vertex: { addWatermark: settings.generation.vertexAddWatermark } },
     }).then(({ image, warnings }) => {
       if (warnings?.length > 0) {
         console.warn(
-          `Warnings [requestId=${requestId}, provider=${provider}, model=${modelId}]: `,
+          `Warnings [requestId=${requestId}, provider=${provider}, model=${chosenModelId}]: `,
           warnings
         );
       }
       console.log(
-        `Completed image request [requestId=${requestId}, provider=${provider}, model=${modelId}, elapsed=${(
+        `Completed image request [requestId=${requestId}, provider=${provider}, model=${chosenModelId}, elapsed=${(
           (performance.now() - startstamp) /
           1000
         ).toFixed(1)}s].`
@@ -97,7 +112,7 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    const result = await withTimeout(generatePromise, TIMEOUT_MILLIS);
+    const result = await withTimeout(generatePromise, timeoutMillis);
     return NextResponse.json(result, {
       status: "image" in result ? 200 : 500,
     });

@@ -35,7 +35,7 @@ export function ImagePlayground({
     Record<ProviderKey, string>
   >(MODEL_CONFIGS.performance);
   const [enabledProviders, setEnabledProviders] = useState(
-    initializeProviderRecord(true),
+    { ...initializeProviderRecord(false), replicate: true },
   );
   const [mode, setMode] = useState<ModelMode>("performance");
   const toggleView = () => {
@@ -67,7 +67,8 @@ export function ImagePlayground({
   };
 
   const handlePromptSubmit = (newPrompt: string) => {
-    const activeProviders = PROVIDER_ORDER.filter((p) => enabledProviders[p]);
+    const visibleProviders: ProviderKey[] = ["replicate"];
+    const activeProviders = visibleProviders.filter((p) => enabledProviders[p]);
     if (activeProviders.length > 0) {
       startGeneration(newPrompt, activeProviders, providerToModel);
     }
@@ -90,7 +91,7 @@ export function ImagePlayground({
         <>
           {(() => {
             const getModelProps = () =>
-              (Object.keys(PROVIDERS) as ProviderKey[]).map((key) => {
+              (["replicate"] as ProviderKey[]).map((key) => {
                 const provider = PROVIDERS[key];
                 const imageItem = images.find((img) => img.provider === key);
                 const imageData = imageItem?.image;
