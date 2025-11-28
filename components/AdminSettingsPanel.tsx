@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Textarea } from "@/components/ui/textarea";
 import { Toggle } from "@/components/ui/toggle";
 import { ProviderKey, PROVIDERS } from "@/lib/provider-config";
+import { AdminSettings } from "@/lib/admin-settings";
 
 type GenerationSettings = {
   dimensionFormat: "size" | "aspectRatio";
@@ -37,24 +38,28 @@ type AdminSettingsDto = {
 export function AdminSettingsPanel({ apiBaseUrl, adminToken }: { apiBaseUrl: string; adminToken?: string }) {
   const [data, setData] = useState<AdminSettingsDto | null>(null);
   const [pending, setPending] = useState(false);
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (adminToken) headers["x-admin-token"] = adminToken;
 
-  const load = async () => {
-    const res = await fetch(`${apiBaseUrl}/api/admin-settings`, { headers });
+  const makeHeaders = useCallback((): Record<string, string> => {
+    const h: Record<string, string> = { "Content-Type": "application/json" };
+    if (adminToken) h["x-admin-token"] = adminToken;
+    return h;
+  }, [adminToken]);
+
+  const load = useCallback(async () => {
+    const res = await fetch(`${apiBaseUrl}/api/admin-settings`, { headers: makeHeaders() });
     const json = await res.json();
     setData(json as AdminSettingsDto);
-  };
+  }, [apiBaseUrl, makeHeaders]);
 
   useEffect(() => {
     load();
   }, []);
 
-  const update = async (patch: any) => {
+  const update = async (patch: Partial<AdminSettings>) => {
     setPending(true);
     await fetch(`${apiBaseUrl}/api/admin-settings`, {
       method: "POST",
-      headers,
+      headers: makeHeaders(),
       body: JSON.stringify(patch),
     });
     await load();

@@ -7,7 +7,6 @@ import { ModelCardCarousel } from "@/components/ModelCardCarousel";
 import {
   MODEL_CONFIGS,
   PROVIDERS,
-  PROVIDER_ORDER,
   ProviderKey,
   ModelMode,
   initializeProviderRecord,
