@@ -3,7 +3,6 @@ import { ImageModel, experimental_generateImage as generateImage } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { fireworks } from "@ai-sdk/fireworks";
 import { replicate } from "@ai-sdk/replicate";
-import { vertex } from "@ai-sdk/google-vertex/edge";
 import { ProviderKey } from "@/lib/provider-config";
 import { getAdminSettings } from "@/lib/admin-settings";
 import { GenerateImageRequest } from "@/lib/api-types";
@@ -14,8 +13,8 @@ import { GenerateImageRequest } from "@/lib/api-types";
  */
 const TIMEOUT_MILLIS = 55 * 1000;
 
-const DEFAULT_IMAGE_SIZE = "1024x1024";
-const DEFAULT_ASPECT_RATIO = "1:1";
+const DEFAULT_IMAGE_SIZE = "1024x1024" as `${number}x${number}`;
+const DEFAULT_ASPECT_RATIO = "1:1" as `${number}:${number}`;
 
 interface ProviderConfig {
   createImageModel: (modelId: string) => ImageModel;
@@ -34,10 +33,6 @@ const providerConfig: Record<ProviderKey, ProviderConfig> = {
   replicate: {
     createImageModel: replicate.image,
     dimensionFormat: "size",
-  },
-  vertex: {
-    createImageModel: vertex.image,
-    dimensionFormat: "aspectRatio",
   },
 };
 
@@ -88,10 +83,9 @@ export async function POST(req: NextRequest) {
       model: config.createImageModel(chosenModelId),
       prompt: finalPrompt,
       ...(useSize
-        ? { size: settings.generation.size ?? DEFAULT_IMAGE_SIZE }
-        : { aspectRatio: settings.generation.aspectRatio ?? DEFAULT_ASPECT_RATIO }),
+        ? { size: (settings.generation.size ?? DEFAULT_IMAGE_SIZE) as `${number}x${number}` }
+        : { aspectRatio: (settings.generation.aspectRatio ?? DEFAULT_ASPECT_RATIO) as `${number}:${number}` }),
       ...(provider !== "openai" && seedValue !== undefined && { seed: seedValue }),
-      providerOptions: { vertex: { addWatermark: settings.generation.vertexAddWatermark } },
     }).then(({ image, warnings }) => {
       if (warnings?.length > 0) {
         console.warn(

@@ -14,7 +14,6 @@ export type AdminSettings = {
     useSeed: boolean;
     randomizeSeed: boolean;
     seed?: number;
-    vertexAddWatermark: boolean;
     timeoutMillis: number;
   };
   assetRoot?: string;
@@ -27,7 +26,7 @@ let settings: AdminSettings = {
   defaultPrompt: "",
   systemPrompt: "",
   hideModelFromUser: true,
-  providerEnabled: { replicate: true, vertex: false, openai: false, fireworks: false },
+  providerEnabled: { replicate: true, openai: false, fireworks: false },
   generation: {
     dimensionFormat: "size",
     size: "1024x1024",
@@ -35,7 +34,6 @@ let settings: AdminSettings = {
     useSeed: true,
     randomizeSeed: true,
     seed: undefined,
-    vertexAddWatermark: false,
     timeoutMillis: 55 * 1000,
   },
   assetRoot: "",
@@ -98,8 +96,8 @@ export const resetAdminSettings = (): AdminSettings => {
     providerModelOverrides: MODEL_CONFIGS.performance,
     defaultPrompt: "",
     systemPrompt: "",
-    hideModelFromUser: true,
-    providerEnabled: { replicate: true, vertex: false, openai: false, fireworks: false },
+  hideModelFromUser: true,
+    providerEnabled: { replicate: true, openai: false, fireworks: false },
     generation: {
       dimensionFormat: "size",
       size: "1024x1024",
@@ -107,7 +105,6 @@ export const resetAdminSettings = (): AdminSettings => {
       useSeed: true,
       randomizeSeed: true,
       seed: undefined,
-      vertexAddWatermark: false,
       timeoutMillis: 55 * 1000,
     },
     assetRoot: "",

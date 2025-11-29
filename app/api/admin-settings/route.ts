@@ -38,7 +38,6 @@ export async function POST(req: NextRequest) {
         useSeed: boolean;
         randomizeSeed: boolean;
         seed?: number;
-        vertexAddWatermark: boolean;
         timeoutMillis: number;
       };
       assetRoot?: string;

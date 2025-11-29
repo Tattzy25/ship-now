@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
+import { ModeToggle } from "./ModeToggle";
 
 const SparklesIcon = ({ size = 18 }) => {
   return (
@@ -45,9 +45,7 @@ export const Header = () => {
             
           </h1>
         </div>
-        <Link href={`https://github.com/Tattzy25/ship-now`} target="_blank">
-          <Button variant="outline" size="sm">GitHub</Button>
-        </Link>
+        <ModeToggle />
       </div>
     </header>
   );
